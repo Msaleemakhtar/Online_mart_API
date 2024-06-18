@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package product;
+
+  enum OperationType {
+        CREATE = 0;
+        UPDATE = 1;
+        DELETE = 2;
+    }
+
+
+message Product {
+    int32 id = 1; // Added the id field
+    string name = 2;
+    string description = 3;
+    double price = 4;
+    string expiry = 5;
+    string brand = 6;
+    double weight = 7;
+    int32 category_id = 8;
+    string sku = 9;
+    int32 stock_quantity = 10;
+    int32 reorder_level = 11;
+    string meta_title = 12;
+    string meta_description = 13;
+    string meta_keywords = 14;
+    OperationType operation = 15;
+}
+
+
+
