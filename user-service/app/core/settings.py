@@ -8,9 +8,14 @@ except FileNotFoundError:
     config = Config()
 
 
-DB_URL = config("DB_URL", cast=Secret)
 
-TEST_DB_URL = config("TEST_DB_URL", cast=Secret)
+DATABASE_URL = config("DATABASE_URL", cast=str, )
+
+# BOOTSTRAP_SERVER = config("BOOTSTRAP_SERVER", cast=str)
+# KAFKA_USER_TOPIC = config("KAFKA_USER_TOPIC", cast=str)
+# KAFKA_CONSUMER_GROUP_ID_FOR_USER = config("KAFKA_CONSUMER_GROUP_ID_FOR_USER", cast=str)
+
+TEST_DATABASE_URL = config("TEST_DATABASE_URL", cast=str)
 
 SECRET_KEY = config("SECRET_KEY", cast=Secret)
 ALGORITHM = config("ALGORITHM", cast=Secret)

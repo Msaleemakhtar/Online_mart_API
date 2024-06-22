@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package usermicroservice;
+
+import "google/protobuf/timestamp.proto";
+
+// Operation types for user actions
+enum OperationType {
+    CREATE = 0;
+    UPDATE = 1;
+    DELETE = 2;
+    GET    = 3;
+}
+
+// Basic token with access token and token type
+message Token {
+    string access_token = 1;
+    string token_type = 2;
+}
+
+// GPT token extending the basic token
+message GptToken {
+    string access_token = 1;
+    string token_type = 2;
+    int32 expires_in = 3;
+    string refresh_token = 4;
+}
+
+// Token-related data associated with a user
+message TokenData {
+    string username = 1;
+}
+
+// User data that can be read
+message UserRead {
+    string username = 1;
+    string full_name = 2;
+    string email = 3;
+    bool email_verified = 4;
+}
+
+// User model with additional fields for ID, hashed password, and timestamps
+message User {
+    string id = 1;
+    string username = 2;
+    string full_name = 3;
+    string email = 4;
+    bool email_verified = 5;
+    string hashed_password = 6;
+    google.protobuf.Timestamp updated_at = 7;
+    google.protobuf.Timestamp created_at = 8;
+    OperationType operation = 9;
+}
+
+// User registration data including password
+message UserRegister {
+    string username = 1;
+    string full_name = 2;
+    string email = 3;
+    bool email_verified = 4;
+    string password = 5;
+}
+
+// User data stored in the database
+message UserInDb {
+    string id = 1;
+    string username = 2;
+    string full_name = 3;
+    string email = 4;
+    bool email_verified = 5;
+    string hashed_password = 6;
+}
+
+// User data that is outputted
+message UserOutput {
+    string id = 1;
+    string username = 2;
+    string full_name = 3;
+    string email = 4;
+    bool email_verified = 5;
+}
+
+// Response returned after a user logs in
+message LoginResponse {
+    string access_token = 1;
+    string token_type = 2;
+    UserOutput user = 3;
+    int32 expires_in = 4;
+    string refresh_token = 5;
+}
+
+

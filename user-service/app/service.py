@@ -23,7 +23,8 @@ REFRESH_TOKEN_EXPIRE_MINUTES = float(str(settings.REFRESH_TOKEN_EXPIRE_MINUTES))
 
 
 
-Oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+Oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/oauth/login")
+
 
 
 def authenticate_user(db, username:str, password:str):
@@ -129,7 +130,9 @@ async def user_signup(user_data:UserRegister, db:Annotated[Session, Depends(get_
     
 
 
-async def get_gpt_token(grant_type:str = Form(...), refresh_token:Optional[str] = Form(None), code:Optional[str]=Form(None)):
+async def get_gpt_token(grant_type:str = Form(...), 
+                        refresh_token:Optional[str] = Form(None),
+                                    code:Optional[str]=Form(None)):
    
    
     if grant_type == "refresh_token":

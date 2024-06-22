@@ -2,7 +2,8 @@ from typing import Optional, Annotated
 from sqlmodel import Session
 
 from fastapi import Depends, HTTPException, FastAPI, Form
-from fastapi.security import OAuth2PasswordRequestForm
+
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from uuid import UUID
 from contextlib import asynccontextmanager
@@ -72,10 +73,10 @@ async def get_temp_code(user_id: UUID):
 
 
 
-# This end point will take token and return user_id
-@app.get("/api/user/me", tags=["User"])
-async def get_user_by_id(user_id: Annotated[UUID, Depends(get_current_user_id)]):
-    return user_id
+# # This end point will take token and return user_id
+# @app.get("/api/user/me", tags=["User"])
+# async def get_user_by_id(user_id: Annotated[UUID, Depends(get_current_user_id)]):
+#     return user_id
 
 @app.get("/api/user/me")
 async def read_users(current_user: Annotated[str, Depends(get_current_user)]):

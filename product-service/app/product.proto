@@ -29,3 +29,6 @@ message Product {
 
 
 
+message ProductList {
+    repeated Product products = 1;
+}

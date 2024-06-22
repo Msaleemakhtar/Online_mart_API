@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Any, Union
+from typing import Any, Union
  
 from jose import jwt, JWTError
 from passlib.context import CryptContext

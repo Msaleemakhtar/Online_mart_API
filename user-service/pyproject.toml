@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "auth-server"
+name = "user-server"
 version = "0.1.0"
 description = ""
 authors = ["Msaleem <saleemakhtar864@gmail.com>"]

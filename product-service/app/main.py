@@ -141,6 +141,44 @@ async def delete_product(product_id: int, producer: Annotated[AIOKafkaProducer, 
     return {"message": "Product deleted successfully"}
 
 
+# @app.get("/all_products_db", response_model=List[Product], tags=["kafka_Operations"])
+# async def get_products(
+#     session: Session = Depends(get_session),
+#     producer: AIOKafkaProducer = Depends(get_kafka_producer)
+# ):
+#     products = get_all_products(session)
+    
+#     # Convert the list of products to the protobuf format
+#     product_list_message = product_pb2.ProductList()
+#     for product in products:
+#         product_message = product_pb2.Product(
+#             id=product.id,
+#             name=product.name,
+#             description=product.description,
+#             price=product.price,
+#             expiry=product.expiry,
+#             brand=product.brand,
+#             weight=product.weight,
+#             category_id=product.category_id,
+#             sku=product.sku,
+#             stock_quantity=product.stock_quantity,
+#             reorder_level=product.reorder_level,
+#             meta_title=product.meta_title,
+#             meta_description=product.meta_description,
+#             meta_keywords=product.meta_keywords,
+           
+#         )
+#         product_list_message.products.append(product_message)
+
+#     # Serialize the protobuf message to a byte string
+#     serialized_products = product_list_message.SerializeToString()
+
+#     # Send the serialized data to the Kafka topic
+#     await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, serialized_products)
+
+#     return products
+
+
 
 # Get all products from database
 @app.get("/all_products", response_model=List[Product], tags=["Database_Operations"])
