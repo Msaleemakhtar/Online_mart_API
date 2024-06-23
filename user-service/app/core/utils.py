@@ -1,9 +1,9 @@
-from fastapi import HTTPException, Security, status
+from fastapi import HTTPException, Depends,status
 from fastapi.security import OAuth2PasswordBearer
 
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
-from typing import Any, Union
+from typing import Any, Union, Annotated
  
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -16,7 +16,9 @@ ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
-Oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+Oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/oauth/login")
+
 
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
@@ -38,7 +40,7 @@ credentials_exception = HTTPException(
 
 
 # get the id of current user
-async def get_current_user_id(token: str | None = Security(Oauth2_scheme)):
+async def get_current_user_id(token: Annotated[str, Depends(Oauth2_scheme)]):
   
     try:
         if not token:

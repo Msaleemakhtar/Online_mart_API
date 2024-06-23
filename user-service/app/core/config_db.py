@@ -7,7 +7,7 @@ from app.models import User
 
 connection_str = str(settings.DATABASE_URL).replace("postgresql", "postgresql+psycopg")
 
-engine = create_engine(connection_str, connect_args={"sslmode": "require"}, pool_recycle= 300)
+engine = create_engine(connection_str, connect_args={}, pool_recycle= 300)
 
 
 def get_db():

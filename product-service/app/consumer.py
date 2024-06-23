@@ -5,7 +5,7 @@ from aiokafka import AIOKafkaConsumer
 #from aiokafka.errors import KafkaConnectionError, KafkaError
 
 from app import settings
-from app.db import engine, Session, get_session
+from app.db import get_session
 from app.models.product_model import Product, Category
 from sqlmodel import select
 

@@ -9,7 +9,6 @@ enum OperationType {
     CREATE = 0;
     UPDATE = 1;
     DELETE = 2;
-    GET    = 3;
 }
 
 // Basic token with access token and token type
@@ -49,7 +48,6 @@ message User {
     string hashed_password = 6;
     google.protobuf.Timestamp updated_at = 7;
     google.protobuf.Timestamp created_at = 8;
-    OperationType operation = 9;
 }
 
 // User registration data including password
@@ -89,4 +87,8 @@ message LoginResponse {
     string refresh_token = 5;
 }
 
-
+// Message for user-related operations
+message UserOperation {
+    OperationType operation = 1;
+    User user = 2;
+}

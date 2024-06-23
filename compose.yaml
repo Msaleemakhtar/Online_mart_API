@@ -43,7 +43,7 @@ services:
       - POSTGRES_PASSWORD=saleem
       - POSTGRES_DB=user-service-api
     ports:
-      - '5432:5432'
+      - '5435:5432'
     volumes:
       - user_db:/var/lib/postgresql/data
     networks:
@@ -118,12 +118,13 @@ services:
       - broker
 
 volumes:
+  user_db:
+    driver: local
   product_db:
     driver: local
   inventory_db:
     driver: local
-  user_db:
-    driver:local
+  
 
 networks:
   default:
