@@ -34,6 +34,17 @@ services:
     ports:
       - "8008:8008"  # Expose container port 8008 to host port 8008 
 
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./order-service:/code  # Sync local development directory with the container
+    depends_on:
+      - order_db
+    ports:
+      - "8009:8009"  # Expose container port 8009 to host port 8009 
+
   user_db:
     image: postgres:latest  # Use the official PostgreSQL image
     restart: always
@@ -43,7 +54,7 @@ services:
       - POSTGRES_PASSWORD=saleem
       - POSTGRES_DB=user-service-api
     ports:
-      - '5435:5432'
+      - '5433:5432'
     volumes:
       - user_db:/var/lib/postgresql/data
     networks:
@@ -58,7 +69,7 @@ services:
       - POSTGRES_PASSWORD=saleem
       - POSTGRES_DB=product-service-api
     ports:
-      - '5433:5432'
+      - '5434:5432'
     volumes:
       - product_db:/var/lib/postgresql/data
     networks:
@@ -73,9 +84,24 @@ services:
       - POSTGRES_PASSWORD=saleem
       - POSTGRES_DB=inventory-service-api
     ports:
-      - '5434:5432'
+      - '5435:5432'
     volumes:
       - inventory_db:/var/lib/postgresql/data
+    networks:
+      - default
+
+  order_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: order_db_container
+    environment:
+      - POSTGRES_USER=saleem
+      - POSTGRES_PASSWORD=saleem
+      - POSTGRES_DB=order-service-api
+    ports:
+      - '5436:5432'
+    volumes:
+      - order_db:/var/lib/postgresql/data
     networks:
       - default
         
@@ -124,8 +150,9 @@ volumes:
     driver: local
   inventory_db:
     driver: local
+  order_db:
+    driver: local
   
-
 networks:
   default:
     driver: bridge
