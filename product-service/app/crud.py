@@ -1,8 +1,18 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from app.models.product_model import Product, ProductRating, ProductRatingCreate
+from app.models.product_model import Product,Category, ProductRating, ProductRatingCreate,ProductUpdate
 from typing import Optional
 from datetime import datetime
+import logging
+
+
+
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 
 
 # Get All Products from the Database
@@ -16,6 +26,9 @@ def get_product_by_id(product_id: int, session: Session):
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+
+
 
 
 # Serach and filter product by id, name, category_id , max_price, min_price, brand
@@ -74,21 +87,6 @@ def create_product_rating(session: Session, product_id: int, rating: ProductRati
     session.commit()
     session.refresh(product_rating)
     return product_rating
-
-
-# def update_product_rating(session: Session, rating_id: int, rating_data: ProductRatingCreate) -> ProductRating:
-#     rating = session.get(ProductRating, rating_id)
-#     if not rating:
-#         raise HTTPException(status_code=404, detail="Rating not found")
-    
-#     for field, value in rating_data.dict(exclude_unset=True).items():
-#         setattr(rating, field, value)
-    
-#     session.add(rating)
-#     session.commit()
-#     session.refresh(rating)
-#     return rating
-
 
 
 # Update the rating 

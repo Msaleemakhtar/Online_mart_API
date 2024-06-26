@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from app.models.product_model import Product, ProductRating, ProductRatingCreate
+from app.models.order_model import OrderItem, Order
 from typing import Optional
 from datetime import datetime
 

@@ -50,8 +50,8 @@ async def consume():
                             meta_title=product.meta_title,
                             meta_description=product.meta_description,
                             meta_keywords=product.meta_keywords,
-                            created_at=datetime.utcnow(),
-                            updated_at=datetime.utcnow()
+                            created_at=datetime.now(),
+                            updated_at=datetime.now()
                         )
                         logger.info(f"new product: {new_product}")
                         session.add(new_product)

@@ -28,7 +28,6 @@ message OrderItem {
     int32 quantity = 4;
     google.protobuf.Timestamp created_at = 5;
     google.protobuf.Timestamp updated_at = 6;
-    OperationType operation = 7;
 }
 
 // Message for an order
@@ -40,7 +39,12 @@ message Order {
     google.protobuf.Timestamp created_at = 5;
     google.protobuf.Timestamp updated_at = 6;
     repeated OrderItem items = 7;
-    OperationType operation = 8;
+}
+
+// Message for order operation
+message OrderOperation {
+    OperationType operation = 1;
+    Order order = 2;
 }
 
 // Request to create an order

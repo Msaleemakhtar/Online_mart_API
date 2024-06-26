@@ -39,3 +39,19 @@ class Order(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now)
 
     items: List[OrderItem] = Relationship(back_populates="order")
+
+
+class OrderItemCreate(SQLModel):
+    product_id: str
+    quantity: int
+
+class OrderCreate(SQLModel):
+    user_id: str
+    total_price: float = 0.0
+    items: List[OrderItemCreate]
+
+class OrderUpdate(SQLModel):
+    id: UUID
+    user_id: Optional[str] = None
+    items: Optional[List[OrderItemCreate]] = None
+    status: Optional[OrderStatus] = None

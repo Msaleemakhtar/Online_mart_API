@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, create_engine, Session
-from app.models.product_model import Product, Category, ProductImage, ProductTagLink, Tag, ProductRating
+from app.models.order_model import OrderItem, Order
 from app import settings
 
 

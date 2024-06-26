@@ -6,13 +6,15 @@ from typing import AsyncGenerator, List, Optional
 import asyncio
 from app import product_pb2
 import logging
+from datetime import datetime
 
 from sqlmodel import Session
 from app.db import create_db_and_tables , get_session
-from app.crud import get_all_products, get_product_by_id, get_filtered_products, create_product_rating,get_ratings_for_product, update_product_rating, get_average_rating
+from app.crud import  get_all_products, get_product_by_id, get_filtered_products, create_product_rating,get_ratings_for_product, update_product_rating, get_average_rating
 from app.producer import get_kafka_producer, create_kafka_topic
 from app.models.product_model import ProductUpdate, Product, ProductRating, ProductRatingCreate
-from app.consumer import consume
+#from app.consumer import consume
+from app.service import create_product, update_product, delete_product_from_db
 from app import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -23,18 +25,19 @@ async def lifespan(app: FastAPI):
     logger.info("LifeSpan Event..")
     await create_kafka_topic()
     create_db_and_tables()
-    loop = asyncio.get_event_loop()
-    consume_task = loop.create_task(consume())
-    try:
-        yield
-    finally:
-        consume_task.cancel()
-        try:
-            await consume_task
-        except asyncio.CancelledError:
-            logger.warning("Consume task was cancelled during shutdown.")
-        except Exception as e:
-            logger.error(f"Unexpected error during shutdown: {e}")
+    yield
+    # loop = asyncio.get_event_loop()
+    # consume_task = loop.create_task(consume())
+    # try:
+    #     yield
+    # finally:
+    #     consume_task.cancel()
+    #     try:
+    #         await consume_task
+    #     except asyncio.CancelledError:
+    #         logger.warning("Consume task was cancelled during shutdown.")
+    #     except Exception as e:
+    #         logger.error(f"Unexpected error during shutdown: {e}")
 
 
 
@@ -82,101 +85,123 @@ async def root():
 
 
 
-# Add product to Kafka
+
 @app.post("/products", tags=["Kafka_Operations"])
-async def create_product(product: ProductUpdate, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    product_message = product_pb2.Product(
-        name=product.name,
-        description=product.description,
-        price=product.price,
-        expiry=product.expiry,
-        brand=product.brand,
-        weight=product.weight,
-        category_id=product.category_id,
-        sku=product.sku,
-        stock_quantity=product.stock_quantity,
-        reorder_level=product.reorder_level,
-        meta_title=product.meta_title,
-        meta_description=product.meta_description,
-        meta_keywords=product.meta_keywords,
-        operation=product_pb2.OperationType.CREATE
-    )
+async def create_product_endpoint(product: ProductUpdate, db:Annotated[ Session, Depends(get_session)], producer: AIOKafkaProducer = Depends(get_kafka_producer)):
+    try:
+        # Create the product using the service layer
+        db_product = create_product(db, product)
 
-    await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
-    return {"message": "Product created successfully"}
+        # Prepare the protobuf message
+        product_message = product_pb2.Product(
+            id=db_product.id,  # Include the ID from the database
+            name=product.name,
+            description=product.description,
+            price=product.price,
+            expiry=product.expiry,
+            brand=product.brand,
+            weight=product.weight,
+            category_id=product.category_id,
+            sku=product.sku,
+            stock_quantity=product.stock_quantity,
+            reorder_level=product.reorder_level,
+            meta_title=product.meta_title,
+            meta_description=product.meta_description,
+            meta_keywords=product.meta_keywords,
+            operation=product_pb2.OperationType.CREATE
+        )
 
-# Update product in Kafka
+        # Send protobuf message to Kafka
+        await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+
+        return {"message": "Product created successfully"}
+
+    except Exception as e:
+        # Handle exceptions (rollback, logging, etc.)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+    finally:
+        # Always close the session to release resources
+        db.close()
+
+
+# Update product in db and send to kafka for event streaming
 @app.put("/products/{product_id}", tags=["Kafka_Operations"])
-async def update_product(product_id: int, product: ProductUpdate, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    product_message = product_pb2.Product(
-        id=product_id,  # Include the ID for update
-        name=product.name,
-        description=product.description,
-        price=product.price,
-        expiry=product.expiry,
-        brand=product.brand,
-        weight=product.weight,
-        category_id=product.category_id,
-        sku=product.sku,
-        stock_quantity=product.stock_quantity,
-        reorder_level=product.reorder_level,
-        meta_title=product.meta_title,
-        meta_description=product.meta_description,
-        meta_keywords=product.meta_keywords,
-        operation=product_pb2.OperationType.UPDATE
-    )
+async def update_product_by_id(product_id: int, product: ProductUpdate, db: Annotated[Session, Depends(get_session)], producer: AIOKafkaProducer = Depends(get_kafka_producer)):
 
-    await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
-    return {"message": "Product updated successfully"}
+    try:
+        # Update the product in the database
+        updated_product = update_product(product_id, product, db)
 
-# Delete product from Kafka
+        if not updated_product:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        # Prepare the protobuf message
+        product_message = product_pb2.Product(
+            id=updated_product.id,
+            name=updated_product.name,
+            description=updated_product.description,
+            price=updated_product.price,
+            expiry=updated_product.expiry,  
+            brand=updated_product.brand,
+            weight=updated_product.weight,
+            category_id=updated_product.category_id,
+            sku=updated_product.sku,
+            stock_quantity=updated_product.stock_quantity,
+            reorder_level=updated_product.reorder_level,
+            meta_title=updated_product.meta_title,
+            meta_description=updated_product.meta_description,
+            meta_keywords=updated_product.meta_keywords,
+            operation=product_pb2.OperationType.UPDATE
+        )
+
+        # Send protobuf message to Kafka
+        await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+
+        return {"message": "Product updated successfully"}
+
+    except Exception as e:
+        # Handle exceptions (rollback, logging, etc.)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+    finally:
+        # Always close the session to release resources
+        db.close()
+
+
+
+
+# Delete from data database and send to kafka
 @app.delete("/products/{product_id}", tags=["Kafka_Operations"])
-async def delete_product(product_id: int, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    product_message = product_pb2.Product(
-        id=product_id,  # Ensure ID is set for deletion
-        operation=product_pb2.OperationType.DELETE
-    )
+async def delete_product(product_id: int, db: Session = Depends(get_session), producer: AIOKafkaProducer = Depends(get_kafka_producer)):
+    try:
+        # Delete the product from the database
+        delete_product_from_db(product_id, db)
 
-    await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
-    return {"message": "Product deleted successfully"}
+        # Prepare the protobuf message
+        product_message = product_pb2.Product(
+            id=product_id,  # Ensure ID is set for deletion
+            operation=product_pb2.OperationType.DELETE
+        )
+
+        # Send protobuf message to Kafka
+        await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+
+        return {"message": "Product deleted successfully"}
+
+    except Exception as e:
+        # Handle exceptions (rollback, logging, etc.)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+    finally:
+        # Always close the session to release resources
+        db.close()
 
 
-# @app.get("/all_products_db", response_model=List[Product], tags=["kafka_Operations"])
-# async def get_products(
-#     session: Session = Depends(get_session),
-#     producer: AIOKafkaProducer = Depends(get_kafka_producer)
-# ):
-#     products = get_all_products(session)
-    
-#     # Convert the list of products to the protobuf format
-#     product_list_message = product_pb2.ProductList()
-#     for product in products:
-#         product_message = product_pb2.Product(
-#             id=product.id,
-#             name=product.name,
-#             description=product.description,
-#             price=product.price,
-#             expiry=product.expiry,
-#             brand=product.brand,
-#             weight=product.weight,
-#             category_id=product.category_id,
-#             sku=product.sku,
-#             stock_quantity=product.stock_quantity,
-#             reorder_level=product.reorder_level,
-#             meta_title=product.meta_title,
-#             meta_description=product.meta_description,
-#             meta_keywords=product.meta_keywords,
-           
-#         )
-#         product_list_message.products.append(product_message)
 
-#     # Serialize the protobuf message to a byte string
-#     serialized_products = product_list_message.SerializeToString()
-
-#     # Send the serialized data to the Kafka topic
-#     await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, serialized_products)
-
-#     return products
 
 
 
@@ -247,3 +272,76 @@ def update_rating(
    session: Annotated[Session, Depends(get_session)]
 ):
     return update_product_rating(session, rating_id, rating_data)
+
+
+
+
+
+
+
+
+
+
+# # Add product to Kafka
+# @app.post("/products", tags=["Kafka_Operations"])
+# async def create_product(product: ProductUpdate, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+#     product_message = product_pb2.Product(
+#         name=product.name,
+#         description=product.description,
+#         price=product.price,
+#         expiry=product.expiry,
+#         brand=product.brand,
+#         weight=product.weight,
+#         category_id=product.category_id,
+#         sku=product.sku,
+#         stock_quantity=product.stock_quantity,
+#         reorder_level=product.reorder_level,
+#         meta_title=product.meta_title,
+#         meta_description=product.meta_description,
+#         meta_keywords=product.meta_keywords,
+#         operation=product_pb2.OperationType.CREATE
+#     )
+
+#     await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+#     return {"message": "Product created successfully"}
+
+
+
+
+# Update product in Kafka
+# @app.put("/products/{product_id}", tags=["Kafka_Operations"])
+# async def update_product(product_id: int, product: ProductUpdate, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+#     product_message = product_pb2.Product(
+#         id=product_id,  # Include the ID for update
+#         name=product.name,
+#         description=product.description,
+#         price=product.price,
+#         expiry=product.expiry,
+#         brand=product.brand,
+#         weight=product.weight,
+#         category_id=product.category_id,
+#         sku=product.sku,
+#         stock_quantity=product.stock_quantity,
+#         reorder_level=product.reorder_level,
+#         meta_title=product.meta_title,
+#         meta_description=product.meta_description,
+#         meta_keywords=product.meta_keywords,
+#         operation=product_pb2.OperationType.UPDATE
+#     )
+
+#     await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+#     return {"message": "Product updated successfully"}
+
+
+
+
+# # Delete product from Kafka
+# @app.delete("/products/{product_id}", tags=["Kafka_Operations"])
+# async def delete_product(product_id: int, producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+#     product_message = product_pb2.Product(
+#         id=product_id,  # Ensure ID is set for deletion
+#         operation=product_pb2.OperationType.DELETE
+#     )
+
+#     await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_message.SerializeToString())
+#     return {"message": "Product deleted successfully"}

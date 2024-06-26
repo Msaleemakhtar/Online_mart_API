@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   user-service:
     build:
@@ -11,6 +9,7 @@ services:
       - user_db
     ports:
       - "8006:8006"  # Expose container port 8006 to host port 8006
+    
 
   product-service:
     build:
