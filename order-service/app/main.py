@@ -6,26 +6,19 @@ from uuid import uuid4, UUID
 from aiokafka import AIOKafkaProducer
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, List, Optional
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException
 
 from app import settings
 from sqlmodel import Session
 from app.models.order_model import Order, OrderItem, OrderItemCreate, OrderCreate, OrderUpdate, OrderStatus
-from app.consumer import consume_and_process_orders
+from app.product_consumer import product_consume
+from app.user_consumer import user_consume
 from app.db import create_db_and_tables , get_session
 from app.producer import get_kafka_producer, create_kafka_topic
 #from app.crud import get_all_products, get_product_by_id
 from datetime import datetime
 from google.protobuf.timestamp_pb2 import Timestamp
 
-
-
-
-def timestamp_from_datetime(dt: datetime) -> Timestamp:
-    """Helper function to convert datetime to Timestamp object."""
-    ts = Timestamp()
-    ts.FromDatetime(dt)
-    return ts
 
 
 
@@ -38,13 +31,16 @@ async def lifespan(app: FastAPI):
     await create_kafka_topic()
     create_db_and_tables()
     loop = asyncio.get_event_loop()
-    consume_task = loop.create_task(consume_and_process_orders())
+    product_consume_task = loop.create_task(product_consume())
+    user_consume_task = loop.create_task(user_consume())
     try:
         yield
     finally:
-        consume_task.cancel()
+        product_consume_task.cancel()
+        user_consume_task.cancel()
         try:
-            await consume_task
+            await product_consume_task
+            await user_consume_task
         except asyncio.CancelledError:
             logger.warning("Consume task was cancelled during shutdown.")
         except Exception as e:
@@ -65,7 +61,7 @@ Utilize Kafka for asynchronous creation, updating, and deletion of products.
 
 
 app = FastAPI(lifespan=lifespan,
-    title="Product-service",
+    title="Order-service",
     description=description,
     version="0.0.1",
     terms_of_service="http://example.com/terms/",
@@ -93,10 +89,12 @@ async def root():
 
 
 @app.post("/orders/", response_model=Order)
-async def create_order(order_create: OrderCreate, db: Annotated[Session , Depends(get_session)], producer: AIOKafkaProducer = Depends(get_kafka_producer)):
-
+async def create_order(order_create: OrderCreate, db: Annotated[Session, Depends(get_session)],
+                       producer: AIOKafkaProducer = Depends(get_kafka_producer)):
+    
+  
     try:
-        # Create the order in the database
+  
         order = Order(user_id=order_create.user_id, status=OrderStatus.PENDING)
         db.add(order)
         db.commit()
@@ -127,16 +125,14 @@ async def create_order(order_create: OrderCreate, db: Annotated[Session , Depend
                 user_id=order.user_id,
                 total_price=float(order.total_price),
                 status=order_pb2.OrderStatus.PENDING,
-                created_at=timestamp_from_datetime(order.created_at),
-                updated_at=timestamp_from_datetime(order.updated_at),
+               
                 items=[
                     order_pb2.OrderItem(
                         id=str(item.id),
                         order_id=str(order.id),
                         product_id=item.product_id,
                         quantity=item.quantity,
-                        created_at=timestamp_from_datetime(item.created_at),
-                        updated_at=timestamp_from_datetime(item.updated_at)
+                        
                     ) for item in order_items
                 ]
             )
@@ -158,87 +154,3 @@ async def create_order(order_create: OrderCreate, db: Annotated[Session , Depend
     finally:
         # Always close the session to release resources
         db.close()
-
-
-
-
-
-
-# @app.put("/orders/", response_model=Order)
-# async def update_order(order_update: OrderUpdate, db:Annotated[Session, Depends(get_session)], producer: AIOKafkaProducer = Depends(get_kafka_producer)):
-#     order = db.get(Order, order_update.id)
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-    
-#     if order_update.user_id:
-#         order.user_id = order_update.user_id
-#     if order_update.status:
-#         order.status = order_update.status
-#     order.updated_at = datetime.now()
-#     db.commit()
-#     db.refresh(order)
-    
-#     if order_update.items:
-#         for item in order_update.items:
-#             order_item = db.exec(select(OrderItem).where(OrderItem.order_id == order.id, OrderItem.product_id == item.product_id)).first()
-#             if order_item:
-#                 order_item.quantity = item.quantity
-#                 order_item.updated_at = datetime.now()
-#             else:
-#                 order_item = OrderItem(order_id=order.id, product_id=item.product_id, quantity=item.quantity)
-#                 db.add(order_item)
-#             db.commit()
-#             db.refresh(order_item)
-    
-#     order_message = order_pb2.OrderOperation(
-#         operation=order_pb2.OperationType.UPDATE,
-#         order=order_pb2.Order(
-#             id=str(order.id),
-#             user_id=order.user_id,
-#             total_price=order.total_price,
-#             status=order_pb2.OrderStatus.Value(order.status.upper()),
-#             created_at=order.created_at.isoformat(),
-#             updated_at=order.updated_at.isoformat(),
-#             items=[order_pb2.OrderItem(
-#                 id=str(item.id),
-#                 order_id=str(order.id),
-#                 product_id=item.product_id,
-#                 quantity=item.quantity,
-#                 created_at=item.created_at.isoformat(),
-#                 updated_at=item.updated_at.isoformat()
-#             ) for item in order.items]
-#         )
-#     )
-#     await producer.send_and_wait(settings.KAFKA_ORDER_TOPIC, order_message.SerializeToString())
-#     return order
-
-# @app.delete("/orders/{order_id}", response_model=dict)
-# async def delete_order(order_id: UUID, db:Annotated[Session, Depends(get_session)], producer: AIOKafkaProducer = Depends(get_kafka_producer)):
-#     order = db.get(Order, order_id)
-#     if not order:
-#         raise HTTPException(status_code=404, detail="Order not found")
-    
-#     db.delete(order)
-#     db.commit()
-    
-#     order_message = order_pb2.OrderOperation(
-#         operation=order_pb2.OperationType.DELETE,
-#         order=order_pb2.Order(
-#             id=str(order.id),
-#             user_id=order.user_id,
-#             total_price=order.total_price,
-#             status=order_pb2.OrderStatus.Value(order.status.upper()),
-#             created_at=order.created_at.isoformat(),
-#             updated_at=order.updated_at.isoformat(),
-#             items=[order_pb2.OrderItem(
-#                 id=str(item.id),
-#                 order_id=str(order.id),
-#                 product_id=item.product_id,
-#                 quantity=item.quantity,
-#                 created_at=item.created_at.isoformat(),
-#                 updated_at=item.updated_at.isoformat()
-#             ) for item in order.items]
-#         )
-#     )
-#     await producer.send_and_wait(settings.KAFKA_ORDER_TOPIC, order_message.SerializeToString())
-#     return {"message": "Order deleted successfully"}

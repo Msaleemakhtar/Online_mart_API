@@ -2,21 +2,21 @@ from datetime import datetime
 import logging
 from app import product_pb2
 from aiokafka import AIOKafkaConsumer
+from sqlmodel import select
 #from aiokafka.errors import KafkaConnectionError, KafkaError
 
 from app import settings
 from app.db import get_session
-from app.models.product_model import Product, Category
-from sqlmodel import select
+from app.models.order_model import Product
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def consume():
+async def product_consume():
     consumer = AIOKafkaConsumer(
         settings.KAFKA_PRODUCT_TOPIC,
         bootstrap_servers=settings.BOOTSTRAP_SERVER,
-        group_id=settings.KAFKA_CONSUMER_GROUP_ID_FOR_PRODUCT,
+        group_id=settings.KAFKA_CONSUMER_GROUP_ID_FOR_ORDER,
         auto_offset_reset='latest'
     )
     await consumer.start()
@@ -27,13 +27,6 @@ async def consume():
                 product.ParseFromString(msg.value)
                 logger.info(f"Received product: {product}")
                 with next(get_session()) as session:
-                    # Check if the category exists, if not, create it
-                    category = session.exec(select(Category).where(Category.id == product.category_id)).first()
-                    if not category:
-                        new_category = Category(id=product.category_id, name=f"Category {product.category_id}")
-                        session.add(new_category)
-                        session.commit()
-                        logger.info(f"Category created: {new_category}")
 
                     if product.operation == product_pb2.OperationType.CREATE:
                         new_product = Product(
@@ -43,7 +36,6 @@ async def consume():
                             expiry=product.expiry,
                             brand=product.brand,
                             weight=product.weight,
-                            category_id=product.category_id,
                             sku=product.sku,
                             stock_quantity=product.stock_quantity,
                             reorder_level=product.reorder_level,
@@ -75,8 +67,6 @@ async def consume():
                                 existing_product.brand = product.brand
                             if product.weight:
                                 existing_product.weight = product.weight
-                            if product.category_id:
-                                existing_product.category_id = product.category_id
                             if product.sku:
                                 existing_product.sku = product.sku
                             if product.stock_quantity:

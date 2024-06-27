@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import uuid4, UUID
 from datetime import datetime
 from enum import Enum
@@ -55,3 +55,81 @@ class OrderUpdate(SQLModel):
     user_id: Optional[str] = None
     items: Optional[List[OrderItemCreate]] = None
     status: Optional[OrderStatus] = None
+    
+    
+    
+
+# product schema
+
+class Product(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    price: float
+    expiry: str | None = None
+    brand: str | None = None
+    weight: float | None = None
+    sku: str | None = None
+    stock_quantity: int | None = None
+    reorder_level: int | None = None
+    meta_title: str | None = None
+    meta_description: str | None = None
+    meta_keywords: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    
+
+class ProductUpdate(SQLModel):
+    name: str | None = None
+    description: str | None = None
+    price: float | None = None
+    expiry: str | None = None
+    brand: str | None = None
+    weight: float | None = None
+    category_id: int | None = None
+    sku: str | None = None
+    stock_quantity: int | None = None
+    reorder_level: int | None = None
+    meta_title: str | None = None
+    meta_description: str | None = None
+    meta_keywords: str | None = None
+
+
+
+# user schema
+
+
+
+
+class UserRead(SQLModel):
+    """
+    Represents user data that can be read.
+    """
+    username: str = Field(unique=True, index=True)
+    full_name:str = Field()
+    email: str = Field(unique=True, index=True)
+    email_verified: Union[bool, None] = None
+
+
+
+
+class User(UserRead, table=True):
+    """
+    Represents a generic user model with fields for ID, hashed password, email verification status,
+    and timestamps for creation and update.
+    """
+    id:UUID | None = Field(default_factory=uuid4, primary_key=True, index=True)
+    hashed_password: str = Field(index=True)
+    email_verified: bool = Field(default=False)
+    updated_at: datetime | None = Field(default_factory=datetime.now, sa_column_kwargs={"onupdate": datetime.now})
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+
+
+
+class UserOutput(UserRead):
+    """
+    Represents user data that is outputted, including only the user's ID.
+    """
+    id:UUID
