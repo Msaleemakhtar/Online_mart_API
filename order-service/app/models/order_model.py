@@ -99,28 +99,16 @@ class ProductUpdate(SQLModel):
 # user schema
 
 
-
-
-class UserRead(SQLModel):
-    """
-    Represents user data that can be read.
-    """
-    username: str = Field(unique=True, index=True)
-    full_name:str = Field()
-    email: str = Field(unique=True, index=True)
-    email_verified: Union[bool, None] = None
-
-
-
-
-class User(UserRead, table=True):
+class User(SQLModel, table=True):
     """
     Represents a generic user model with fields for ID, hashed password, email verification status,
     and timestamps for creation and update.
     """
     id:UUID | None = Field(default_factory=uuid4, primary_key=True, index=True)
-    hashed_password: str = Field(index=True)
-    email_verified: bool = Field(default=False)
+    username: str = Field(unique=True, index=True)
+    full_name:str = Field()
+    email: str = Field(unique=True, index=True)
+    email_verified: Union[bool, None] = None
     updated_at: datetime | None = Field(default_factory=datetime.now, sa_column_kwargs={"onupdate": datetime.now})
     created_at: datetime = Field(default_factory=datetime.now)
 
@@ -128,8 +116,3 @@ class User(UserRead, table=True):
 
 
 
-class UserOutput(UserRead):
-    """
-    Represents user data that is outputted, including only the user's ID.
-    """
-    id:UUID
