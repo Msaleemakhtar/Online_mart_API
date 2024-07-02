@@ -1,23 +1,26 @@
 import asyncio
 import logging
-from app import order_pb2
 from typing import Annotated
 from uuid import uuid4, UUID
+from datetime import datetime
 from aiokafka import AIOKafkaProducer
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, List, Optional
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException,Path
+from google.protobuf.timestamp_pb2 import Timestamp
 
 from app import settings
-from sqlmodel import Session
-from app.models.order_model import Order, OrderItem, OrderItemCreate, OrderCreate, OrderUpdate, OrderStatus
-from app.product_consumer import product_consume
-from app.user_consumer import user_consume
-from app.db import create_db_and_tables , get_session
+from app import order_pb2
+from sqlmodel import Session, select
 from app.producer import get_kafka_producer, create_kafka_topic
-#from app.crud import get_all_products, get_product_by_id
-from datetime import datetime
-from google.protobuf.timestamp_pb2 import Timestamp
+from app.user_consumer import user_consume
+from app.inv_consumer import inventory_consume
+from app.db import create_db_and_tables , get_session
+from app.models.order_model import (User, InventoryItem, Order, OrderItem,
+                                OrderItemCreate, OrderCreate, OrderUpdate, OrderStatus)
+from app.crud import get_users, get_inventory, create_order, get_orders, delete_order
+
+
 
 
 
@@ -31,21 +34,10 @@ async def lifespan(app: FastAPI):
     await create_kafka_topic()
     create_db_and_tables()
     loop = asyncio.get_event_loop()
-    product_consume_task = loop.create_task(product_consume())
     user_consume_task = loop.create_task(user_consume())
-    try:
-        yield
-    finally:
-        product_consume_task.cancel()
-        user_consume_task.cancel()
-        try:
-            await product_consume_task
-            await user_consume_task
-        except asyncio.CancelledError:
-            logger.warning("Consume task was cancelled during shutdown.")
-        except Exception as e:
-            logger.error(f"Unexpected error during shutdown: {e}")
-
+    inv_consume_task = loop.create_task(inventory_consume())
+    yield
+   
 
 
 
@@ -85,72 +77,35 @@ app = FastAPI(lifespan=lifespan,
 async def root():
     return {"Order-service"}
 
+#Get all users
+@app.get("/users/", response_model=List[User])
+async def get_all_users(db: Annotated[Session, Depends(get_session)]):
+    users = await get_users(db)
+    return users
 
+#Get all products
+@app.get("/products/", response_model=List[InventoryItem])
+async def get_all_inventory(db: Annotated[Session, Depends(get_session)]):
+    products = await get_inventory(db)
+    return products
 
+#Get all orders
+@app.get("/orders/", response_model=List[Order]) 
+async def get_all_orders(db: Annotated[Session, Depends(get_session)]):
+    orders = await get_orders(db)
+    return orders
 
 @app.post("/orders/", response_model=Order)
-async def create_order(order_create: OrderCreate, db: Annotated[Session, Depends(get_session)],
-                       producer: AIOKafkaProducer = Depends(get_kafka_producer)):
+async def generate_orer(order_create: OrderCreate, db: Annotated[Session, Depends(get_session)],
+                       producer:Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+    return await create_order(order_create, db, producer)
+  
+  
+# Delete order and send to kafka
+@app.delete("/orders/{order_id}")
+async def delete_order_by_id(order_id:str,  db: Annotated[Session, Depends(get_session)],
+                       producer:Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
     
-  
-    try:
-  
-        order = Order(user_id=order_create.user_id, status=OrderStatus.PENDING)
-        db.add(order)
-        db.commit()
-        db.refresh(order)
+    return await delete_order(order_id, db, producer)
 
-        # Create order items and associate with the order
-        order_items = []
-        for item in order_create.items:
-            order_item = OrderItem(order_id=order.id, product_id=item.product_id, quantity=item.quantity)
-            db.add(order_item)
-            order_items.append(order_item)
 
-        # Commit all order items
-        db.commit()
-
-        # Refresh order items to get IDs
-        for order_item in order_items:
-            db.refresh(order_item)
-
-        # Update the order with its items
-        order.items = order_items
-
-        # Prepare protobuf message
-        order_message = order_pb2.OrderOperation(
-            operation=order_pb2.OperationType.CREATE,
-            order=order_pb2.Order(
-                id=str(order.id),
-                user_id=order.user_id,
-                total_price=float(order.total_price),
-                status=order_pb2.OrderStatus.PENDING,
-               
-                items=[
-                    order_pb2.OrderItem(
-                        id=str(item.id),
-                        order_id=str(order.id),
-                        product_id=item.product_id,
-                        quantity=item.quantity,
-                        
-                    ) for item in order_items
-                ]
-            )
-        )
-
-        # Serialize the protobuf message
-        order_message_serialized = order_message.SerializeToString()
-
-        # Send protobuf message to Kafka
-        await producer.send_and_wait(settings.KAFKA_ORDER_TOPIC, order_message_serialized)
-
-        return order
-
-    except Exception as e:
-        # Handle exceptions (rollback, logging, etc.)
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-
-    finally:
-        # Always close the session to release resources
-        db.close()

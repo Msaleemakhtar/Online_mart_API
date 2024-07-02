@@ -1,11 +1,12 @@
 from datetime import datetime
 import logging
-from app import user_pb2
 from aiokafka import AIOKafkaConsumer
 from sqlmodel import select
 from app import settings
 from app.db import get_session
 from app.models.order_model import User
+from uuid import UUID
+from app import user_pb2
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,19 +22,29 @@ async def user_consume():
     try:
         async for msg in consumer:
             try:
-                user = user_pb2.User()
-                user.ParseFromString(msg.value)
+                user_operation = user_pb2.UserOperation()
+                user_operation.ParseFromString(msg.value)
+                user = user_operation.user
                 logger.info(f"Received user: {user}")
+
+                # Extract and validate UUID
+                user_id_str = user.id  # Assuming user.id is a string representation of UUID
+                try:
+                    user_id = UUID(user_id_str)
+                except ValueError:
+                    logger.error(f"Invalid UUID format for user ID: {user_id_str}")
+                    continue
+
                 with next(get_session()) as session:
                     # Check if user already exists
-                    existing_user = session.exec(select(User).where(User.id == user.id)).first()
+                    existing_user = session.exec(select(User).where(User.id == user_id)).first()
                     if existing_user:
                         logger.info(f"User already exists: {existing_user}")
                         continue  # Skip the rest of the loop for this message
 
                     # Create new user
                     new_user = User(
-                        id=user.id,
+                        id=user_id,
                         username=user.username,
                         full_name=user.full_name,
                         email=user.email,

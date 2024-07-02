@@ -14,39 +14,39 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0border.proto\x12\x0corderservice\x1a\x1fgoogle/protobuf/timestamp.proto\"\xaf\x01\n\tOrderItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08order_id\x18\x02 \x01(\t\x12\x12\n\nproduct_id\x18\x03 \x01(\t\x12\x10\n\x08quantity\x18\x04 \x01(\x05\x12.\n\ncreated_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xec\x01\n\x05Order\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x13\n\x0btotal_price\x18\x03 \x01(\x02\x12)\n\x06status\x18\x04 \x01(\x0e\x32\x19.orderservice.OrderStatus\x12.\n\ncreated_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12&\n\x05items\x18\x07 \x03(\x0b\x32\x17.orderservice.OrderItem\"d\n\x0eOrderOperation\x12.\n\toperation\x18\x01 \x01(\x0e\x32\x1b.orderservice.OperationType\x12\"\n\x05order\x18\x02 \x01(\x0b\x32\x13.orderservice.Order\"M\n\x12\x43reateOrderRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12&\n\x05items\x18\x02 \x03(\x0b\x32\x17.orderservice.OrderItem\"9\n\x13\x43reateOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\"\x84\x01\n\x12UpdateOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12&\n\x05items\x18\x03 \x03(\x0b\x32\x17.orderservice.OrderItem\x12)\n\x06status\x18\x04 \x01(\x0e\x32\x19.orderservice.OrderStatus\"9\n\x13UpdateOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\" \n\x12\x44\x65leteOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\"&\n\x13\x44\x65leteOrderResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x1d\n\x0fGetOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\"6\n\x10GetOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\"0\n\tOrderList\x12#\n\x06orders\x18\x01 \x03(\x0b\x32\x13.orderservice.Order*S\n\x0bOrderStatus\x12\x0b\n\x07PENDING\x10\x00\x12\r\n\tVALIDATED\x10\x01\x12\x0b\n\x07SHIPPED\x10\x02\x12\r\n\tCOMPLETED\x10\x03\x12\x0c\n\x08\x43\x41NCELED\x10\x04*3\n\rOperationType\x12\n\n\x06\x43REATE\x10\x00\x12\n\n\x06UPDATE\x10\x01\x12\n\n\x06\x44\x45LETE\x10\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0border.proto\x12\x0corderservice\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdb\x01\n\tOrderItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08order_id\x18\x02 \x01(\t\x12\x12\n\nproduct_id\x18\x03 \x01(\x05\x12\x15\n\rproduct_price\x18\x04 \x01(\x02\x12\x10\n\x08quantity\x18\x05 \x01(\x05\x12\x13\n\x0btotal_price\x18\x06 \x01(\x02\x12.\n\ncreated_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x81\x02\n\x05Order\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x13\n\x0btotal_price\x18\x03 \x01(\x02\x12\x13\n\x0bitems_count\x18\x04 \x01(\x05\x12)\n\x06status\x18\x05 \x01(\x0e\x32\x19.orderservice.OrderStatus\x12.\n\ncreated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12&\n\x05items\x18\x08 \x03(\x0b\x32\x17.orderservice.OrderItem\"d\n\x0eOrderOperation\x12.\n\toperation\x18\x01 \x01(\x0e\x32\x1b.orderservice.OperationType\x12\"\n\x05order\x18\x02 \x01(\x0b\x32\x13.orderservice.Order\"M\n\x12\x43reateOrderRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12&\n\x05items\x18\x02 \x03(\x0b\x32\x17.orderservice.OrderItem\"9\n\x13\x43reateOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\"\x84\x01\n\x12UpdateOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12&\n\x05items\x18\x03 \x03(\x0b\x32\x17.orderservice.OrderItem\x12)\n\x06status\x18\x04 \x01(\x0e\x32\x19.orderservice.OrderStatus\"9\n\x13UpdateOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\" \n\x12\x44\x65leteOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\"&\n\x13\x44\x65leteOrderResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x1d\n\x0fGetOrderRequest\x12\n\n\x02id\x18\x01 \x01(\t\"6\n\x10GetOrderResponse\x12\"\n\x05order\x18\x01 \x01(\x0b\x32\x13.orderservice.Order\"0\n\tOrderList\x12#\n\x06orders\x18\x01 \x03(\x0b\x32\x13.orderservice.Order*S\n\x0bOrderStatus\x12\x0b\n\x07PENDING\x10\x00\x12\r\n\tVALIDATED\x10\x01\x12\x0b\n\x07SHIPPED\x10\x02\x12\r\n\tCOMPLETED\x10\x03\x12\x0c\n\x08\x43\x41NCELED\x10\x04*3\n\rOperationType\x12\n\n\x06\x43REATE\x10\x00\x12\n\n\x06UPDATE\x10\x01\x12\n\n\x06\x44\x45LETE\x10\x02\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'order_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _ORDERSTATUS._serialized_start=1124
-  _ORDERSTATUS._serialized_end=1207
-  _OPERATIONTYPE._serialized_start=1209
-  _OPERATIONTYPE._serialized_end=1260
+  _ORDERSTATUS._serialized_start=1189
+  _ORDERSTATUS._serialized_end=1272
+  _OPERATIONTYPE._serialized_start=1274
+  _OPERATIONTYPE._serialized_end=1325
   _ORDERITEM._serialized_start=63
-  _ORDERITEM._serialized_end=238
-  _ORDER._serialized_start=241
-  _ORDER._serialized_end=477
-  _ORDEROPERATION._serialized_start=479
-  _ORDEROPERATION._serialized_end=579
-  _CREATEORDERREQUEST._serialized_start=581
-  _CREATEORDERREQUEST._serialized_end=658
-  _CREATEORDERRESPONSE._serialized_start=660
-  _CREATEORDERRESPONSE._serialized_end=717
-  _UPDATEORDERREQUEST._serialized_start=720
-  _UPDATEORDERREQUEST._serialized_end=852
-  _UPDATEORDERRESPONSE._serialized_start=854
-  _UPDATEORDERRESPONSE._serialized_end=911
-  _DELETEORDERREQUEST._serialized_start=913
-  _DELETEORDERREQUEST._serialized_end=945
-  _DELETEORDERRESPONSE._serialized_start=947
-  _DELETEORDERRESPONSE._serialized_end=985
-  _GETORDERREQUEST._serialized_start=987
-  _GETORDERREQUEST._serialized_end=1016
-  _GETORDERRESPONSE._serialized_start=1018
-  _GETORDERRESPONSE._serialized_end=1072
-  _ORDERLIST._serialized_start=1074
-  _ORDERLIST._serialized_end=1122
+  _ORDERITEM._serialized_end=282
+  _ORDER._serialized_start=285
+  _ORDER._serialized_end=542
+  _ORDEROPERATION._serialized_start=544
+  _ORDEROPERATION._serialized_end=644
+  _CREATEORDERREQUEST._serialized_start=646
+  _CREATEORDERREQUEST._serialized_end=723
+  _CREATEORDERRESPONSE._serialized_start=725
+  _CREATEORDERRESPONSE._serialized_end=782
+  _UPDATEORDERREQUEST._serialized_start=785
+  _UPDATEORDERREQUEST._serialized_end=917
+  _UPDATEORDERRESPONSE._serialized_start=919
+  _UPDATEORDERRESPONSE._serialized_end=976
+  _DELETEORDERREQUEST._serialized_start=978
+  _DELETEORDERREQUEST._serialized_end=1010
+  _DELETEORDERRESPONSE._serialized_start=1012
+  _DELETEORDERRESPONSE._serialized_end=1050
+  _GETORDERREQUEST._serialized_start=1052
+  _GETORDERREQUEST._serialized_end=1081
+  _GETORDERRESPONSE._serialized_start=1083
+  _GETORDERRESPONSE._serialized_end=1137
+  _ORDERLIST._serialized_start=1139
+  _ORDERLIST._serialized_end=1187
 # @@protoc_insertion_point(module_scope)

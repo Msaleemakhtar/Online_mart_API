@@ -1,0 +1,38 @@
+
+syntax = "proto3";
+
+package app;
+
+// Define InventoryItem message
+message InventoryItem {
+  int32 id = 1;
+  int32 product_id = 2;
+  int32 stock_quantity = 3;
+  int32 reorder_level = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+// Define StockAdjustment message
+message StockAdjustment {
+  int32 id = 1;
+  int32 inventory_item_id = 2;
+  string adjustment_type = 3;
+  int32 quantity = 4;
+  string reason = 5;
+  string created_at = 6;
+}
+
+// Define OperationType enum
+enum OperationType {
+  CREATE = 0;
+  UPDATE = 1;
+  DELETE = 2;
+}
+
+// Define InventoryOperation message
+message InventoryOperation {
+  OperationType operation = 1;
+  InventoryItem inventory_item = 2;
+  StockAdjustment stock_adjustment = 3;
+}

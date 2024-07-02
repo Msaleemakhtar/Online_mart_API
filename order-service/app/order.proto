@@ -24,10 +24,12 @@ enum OperationType {
 message OrderItem {
     string id = 1;
     string order_id = 2;
-    string product_id = 3;
-    int32 quantity = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
+    int32 product_id = 3;
+    float product_price = 4;
+    int32 quantity = 5;
+    float total_price = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
 }
 
 // Message for an order
@@ -35,10 +37,11 @@ message Order {
     string id = 1;
     string user_id = 2;
     float total_price = 3;
-    OrderStatus status = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
-    repeated OrderItem items = 7;
+    int32 items_count = 4;
+    OrderStatus status = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+    repeated OrderItem items = 8;
 }
 
 // Message for order operation
