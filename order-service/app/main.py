@@ -18,11 +18,7 @@ from app.inv_consumer import inventory_consume
 from app.db import create_db_and_tables , get_session
 from app.models.order_model import (User, InventoryItem, Order, OrderItem,
                                 OrderItemCreate, OrderCreate, OrderUpdate, OrderStatus)
-from app.crud import get_users, get_inventory, create_order, get_orders, delete_order
-
-
-
-
+from app.crud import get_users, get_inventory, create_order, get_orders, delete_order, update_order
 
 
 logging.basicConfig(level=logging.INFO)
@@ -108,4 +104,8 @@ async def delete_order_by_id(order_id:str,  db: Annotated[Session, Depends(get_s
     
     return await delete_order(order_id, db, producer)
 
-
+#update order and send to kafka
+@app.put("/orders/{order_id}")
+async def update_order_by_id(order_id:str, order_update:OrderUpdate, db: Annotated[Session, Depends(get_session)],
+                       producer:Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+    return await update_order(order_id, order_update, db, producer)

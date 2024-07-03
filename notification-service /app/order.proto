@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package orderservice;
+
+import "google/protobuf/timestamp.proto";
+
+// Enum for order status
+enum OrderStatus {
+    PENDING = 0;
+    VALIDATED = 1;
+    SHIPPED = 2;
+    COMPLETED = 3;
+    CANCELED = 4;
+}
+
+// Enum for operation type
+enum OperationType {
+    CREATE = 0;
+    UPDATE = 1;
+    DELETE = 2;
+}
+
+// Message for an order item
+message OrderItem {
+    string id = 1;
+    string order_id = 2;
+    int32 product_id = 3;
+    float product_price = 4;
+    int32 quantity = 5;
+    float total_price = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+// Message for an order
+message Order {
+    string id = 1;
+    string user_id = 2;
+    float total_price = 3;
+    int32 items_count = 4;
+    OrderStatus status = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+    repeated OrderItem items = 8;
+}
+
+// Message for order operation
+message OrderOperation {
+    OperationType operation = 1;
+    Order order = 2;
+}
+
+// Request to create an order
+message CreateOrderRequest {
+    string user_id = 1;
+    repeated OrderItem items = 2;
+}
+
+// Response after creating an order
+message CreateOrderResponse {
+    Order order = 1;
+}
+
+// Request to update an order
+message UpdateOrderRequest {
+    string id = 1;
+    string user_id = 2;
+    repeated OrderItem items = 3;
+    OrderStatus status = 4;
+}
+
+// Response after updating an order
+message UpdateOrderResponse {
+    Order order = 1;
+}
+
+// Request to delete an order
+message DeleteOrderRequest {
+    string id = 1;
+}
+
+// Response after deleting an order
+message DeleteOrderResponse {
+    string message = 1;
+}
+
+// Request to get an order by ID
+message GetOrderRequest {
+    string id = 1;
+}
+
+// Response with the order details
+message GetOrderResponse {
+    Order order = 1;
+}
+
+// Message for a list of orders
+message OrderList {
+    repeated Order orders = 1;
+}

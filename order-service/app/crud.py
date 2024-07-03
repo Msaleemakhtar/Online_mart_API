@@ -145,3 +145,107 @@ async def delete_order(order_id:UUID, db: Session, producer: AIOKafkaProducer):
     db.commit()
 
     return {"detail": "Order deleted successfully"}
+
+
+
+async def update_order(order_id: UUID, order_update: OrderCreate, db: Session, producer: AIOKafkaProducer):
+    # Fetch the existing order
+    order = db.exec(select(Order).where(Order.id == str(order_id))).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Check if the user exists
+    user = db.exec(select(User).where(User.id == order_update.user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    order.user_id = order_update.user_id
+
+    total_price = order.total_price
+    total_items = order.items_count
+
+    # Handle order items if provided
+    if order_update.items:
+        total_price = 0
+        total_items = 0
+        order_items = []
+
+        for item in order_update.items:
+            # Check if the product exists
+            product = db.exec(select(InventoryItem).where(InventoryItem.id == item.product_id)).first()
+            if not product:
+                raise HTTPException(status_code=404, detail=f"Product with id {item.product_id} not found")
+            
+            # Calculate the total price and total items
+            item.total_price = item.product_price * item.quantity
+            total_price += item.total_price
+            total_items += item.quantity
+
+            # Create or update order item
+            order_item = db.exec(select(OrderItem).where(OrderItem.order_id == str(order_id), OrderItem.product_id == item.product_id)).first()
+            if order_item:
+                order_item.quantity = item.quantity
+                order_item.product_price = item.product_price
+                order_item.total_price = item.total_price
+            else:
+                order_item = OrderItem(
+                    order_id=order.id,
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    product_price=item.product_price,
+                    total_price=item.total_price
+                )
+                db.add(order_item)
+            
+            order_items.append(order_item)
+        
+        # Refresh order items to get IDs
+        for order_item in order_items:
+            db.refresh(order_item)
+        order.items = order_items
+
+    # Determine the new status dynamically
+    if order_update.status:
+        try:
+            new_status = OrderStatus[order_update.status.upper()]
+        except KeyError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {order_update.status}")
+        order.status = new_status
+
+    order.total_price = total_price
+    order.items_count = total_items
+    order.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(order)
+
+    # Prepare protobuf message
+    order_message = order_pb2.OrderOperation(
+        operation=order_pb2.OperationType.UPDATE,
+        order=order_pb2.Order(
+            id=str(order.id),
+            user_id=order.user_id,
+            total_price=float(order.total_price),
+            items_count=order.items_count,
+            status=order_pb2.OrderStatus.Value(order.status.name),
+            items=[
+                order_pb2.OrderItem(
+                    id=str(item.id),
+                    order_id=str(order.id),
+                    product_id=int(item.product_id),
+                    quantity=int(item.quantity),
+                    product_price=float(item.product_price),
+                    total_price=float(item.total_price),
+                ) for item in order.items
+            ])
+    )
+
+    # Serialize the protobuf message
+    order_message_serialized = order_message.SerializeToString()
+
+    # Send protobuf message to Kafka
+    await producer.send_and_wait(settings.KAFKA_ORDER_TOPIC, order_message_serialized)
+    
+    return {"detail": "Order updated successfully"}
+
+    

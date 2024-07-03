@@ -44,6 +44,17 @@ services:
     ports:
       - "8009:8009"  # Expose container port 8009 to host port 8009 
 
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./notification-service:/code  # Sync local development directory with the container
+    depends_on:
+      - notification_db
+    ports:
+      - "8010:8010"  # Expose container port 8009 to host port 8009 
+
   user_db:
     image: postgres:latest  # Use the official PostgreSQL image
     restart: always
@@ -103,6 +114,21 @@ services:
       - order_db:/var/lib/postgresql/data
     networks:
       - default
+
+  notification_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: notification_db_container
+    environment:
+      - POSTGRES_USER=saleem
+      - POSTGRES_PASSWORD=saleem
+      - POSTGRES_DB=notification-service-api
+    ports:
+      - '5437:5432'
+    volumes:
+      - notification_db:/var/lib/postgresql/data
+    networks:
+      - default
         
   broker:
     image: apache/kafka:3.7.0
@@ -150,6 +176,8 @@ volumes:
   inventory_db:
     driver: local
   order_db:
+    driver: local
+  notification_db:
     driver: local
   
 networks:
