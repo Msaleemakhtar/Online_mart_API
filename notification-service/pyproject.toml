@@ -31,6 +31,10 @@ sentry-sdk = {extras = ["fastapi"], version = "^1.42.0"}
 aiokafka = "^0.10.0"
 protobuf = "^5.26.1"
 psycopg2 = "^2.9.9"
+google-api-python-client = "^2.136.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.0"
+update = "^0.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"

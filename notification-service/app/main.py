@@ -1,20 +1,9 @@
 import asyncio
 import logging
-from typing import Annotated
-from uuid import uuid4, UUID
-from datetime import datetime
-from aiokafka import AIOKafkaProducer
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, List, Optional
-from fastapi import FastAPI, Depends, HTTPException
-from google.protobuf.timestamp_pb2 import Timestamp
+from fastapi import FastAPI
+from app.kafka_consumer import consume_users, consume_orders
 
-from app import settings
-from app import order_pb2
-from sqlmodel import Session
-from app.producer import get_kafka_producer, create_kafka_topic
-from app.user_consumer import user_consume
-from app.db import create_db_and_tables , get_session
 
 
 
@@ -24,9 +13,10 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("LifeSpan Event..")
-    create_db_and_tables()
+    #create_db_and_tables()
     loop = asyncio.get_event_loop()
-    loop.create_task(user_consume())
+    order_task= loop.create_task(consume_orders())
+    user_task = loop.create_task(consume_users())
     yield
    
 
@@ -66,5 +56,5 @@ app = FastAPI(lifespan=lifespan,
 
 @app.get("/")
 async def root():
-    return {"Order-service"}
+    return {"Notification -service"}
 

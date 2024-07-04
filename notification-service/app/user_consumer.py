@@ -4,7 +4,7 @@ from aiokafka import AIOKafkaConsumer
 from sqlmodel import select
 from app import settings
 from app.db import get_session
-from app.models.order_model import User
+from app.models import User
 from uuid import UUID
 from app import user_pb2
 
