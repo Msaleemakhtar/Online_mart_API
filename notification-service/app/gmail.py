@@ -9,6 +9,7 @@ from googleapiclient.errors import HttpError
 
 SCOPES = ['https://mail.google.com/']
 
+
 def get_gmail_service():
     creds = None
     if os.path.exists('token.json'):

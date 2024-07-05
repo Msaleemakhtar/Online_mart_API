@@ -2,13 +2,15 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.kafka_consumer import consume_users, consume_orders
-
+from app.users_consumer import consume_users
+from app.orders_consumer import consume_orders
 
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,9 +21,6 @@ async def lifespan(app: FastAPI):
     user_task = loop.create_task(consume_users())
     yield
    
-
-
-
 
 description = f"""
 Notification Microservice API allows you to manage notification effectively. 

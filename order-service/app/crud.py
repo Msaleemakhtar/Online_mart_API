@@ -80,6 +80,7 @@ async def create_order(order_create:OrderCreate, db: Session, producer:AIOKafkaP
         order=order_pb2.Order(
             id= str(order.id),
             user_id=order.user_id,
+            user_email=user.email,
             total_price=float(order.total_price),
             items_count=order.items_count,
             status=order_pb2.OrderStatus.PENDING,
@@ -109,13 +110,14 @@ async def create_order(order_create:OrderCreate, db: Session, producer:AIOKafkaP
 
 async def delete_order(order_id:UUID, db: Session, producer: AIOKafkaProducer):
     # Fetch the existing order
-    
-   
     order = db.exec(select(Order).where(Order.id == order_id)).first()
-    
-    
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Fetch the existing user
+    user = db.exec(select(User).where(User.id == order.user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
  
     # Prepare protobuf message before deleting the order
     order_message = order_pb2.OrderOperation(
@@ -123,6 +125,7 @@ async def delete_order(order_id:UUID, db: Session, producer: AIOKafkaProducer):
         order=order_pb2.Order(
             id=str(order.id),
             user_id=str(order.user_id),
+            user_email=user.email,
             total_price=float(order.total_price),
             items_count=order.items_count,
             status=order_pb2.OrderStatus.CANCELED,
@@ -225,6 +228,7 @@ async def update_order(order_id: UUID, order_update: OrderCreate, db: Session, p
         order=order_pb2.Order(
             id=str(order.id),
             user_id=order.user_id,
+            user_email=user.email,
             total_price=float(order.total_price),
             items_count=order.items_count,
             status=order_pb2.OrderStatus.Value(order.status.name),

@@ -36,12 +36,13 @@ message OrderItem {
 message Order {
     string id = 1;
     string user_id = 2;
-    float total_price = 3;
-    int32 items_count = 4;
-    OrderStatus status = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
-    repeated OrderItem items = 8;
+    string user_email= 3;
+    float total_price = 4;
+    int32 items_count = 5;
+    OrderStatus status = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    repeated OrderItem items = 9;
 }
 
 // Message for order operation
