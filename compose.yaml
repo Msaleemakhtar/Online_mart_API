@@ -44,16 +44,27 @@ services:
     ports:
       - "8009:8009"  # Expose container port 8009 to host port 8009 
 
+
   notification-service:
     build:
       context: ./notification-service
       dockerfile: Dockerfile.dev
     volumes:
-      - ./notification-service:/code  # Sync local development directory with the container
-    depends_on:
-      - notification_db
+      - ./notification-service:/code  # Sync local development directory with the container  
     ports:
-      - "8010:8010"  # Expose container port 8009 to host port 8009 
+      - "8010:8010" 
+
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./payment-service:/code  # Sync local development directory with the container
+    depends_on:
+      - payment_db
+    ports:
+      - "8011:8011" 
 
   user_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -115,18 +126,18 @@ services:
     networks:
       - default
 
-  notification_db:
+  payment_db:
     image: postgres:latest  # Use the official PostgreSQL image
     restart: always
-    container_name: notification_db_container
+    container_name: payment_db_container
     environment:
       - POSTGRES_USER=saleem
       - POSTGRES_PASSWORD=saleem
-      - POSTGRES_DB=notification-service-api
+      - POSTGRES_DB=payment-service-api
     ports:
-      - '5437:5432'
+      - '5438:5432'
     volumes:
-      - notification_db:/var/lib/postgresql/data
+      - payment_db:/var/lib/postgresql/data
     networks:
       - default
         
@@ -177,7 +188,7 @@ volumes:
     driver: local
   order_db:
     driver: local
-  notification_db:
+  payment_db:
     driver: local
   
 networks:
