@@ -70,7 +70,9 @@ app = FastAPI(lifespan=lifespan,
             "url": "http://127.0.0.1:8008", # ADD NGROK URL Here Before Creating GPT Action
             "description": "Development Server"
         }
-        ]
+        ],
+    root_path="/inventory-service",
+    root_path_in_servers=True
 )
 
 @app.get("/")

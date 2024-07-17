@@ -45,12 +45,14 @@ app = FastAPI(lifespan=lifespan,
         "name": "Apache 2.0",
         "identifier": "MIT",
     },
-     servers=[
+    servers=[
         {
             "url": "http://127.0.0.1:8010", # ADD NGROK URL Here Before Creating GPT Action
             "description": "Development Server"
         }
-        ]
+        ],
+    root_path="/notification-service",
+    root_path_in_servers=True
 )
 
 @app.get("/")

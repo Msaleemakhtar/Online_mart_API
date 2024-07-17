@@ -1,3 +1,13 @@
+name: ai-mart-platform
+
+x-kong-config: 
+  &kong-env
+  KONG_DATABASE: ${KONG_DATABASE:-postgres}
+  KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+  KONG_PG_HOST: db
+  KONG_PG_USER: ${KONG_PG_USER:-kong}
+  KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+
 services:
   user-service:
     build:
@@ -6,10 +16,11 @@ services:
     volumes:
       - ./user-service:/code  # Sync local development directory with the container
     depends_on:
+      - broker
       - user_db
     ports:
       - "8006:8006"  # Expose container port 8006 to host port 8006
-    
+
 
   product-service:
     build:
@@ -18,9 +29,11 @@ services:
     volumes:
       - ./product-service:/code  # Sync local development directory with the container
     depends_on:
+      - broker
       - product_db
     ports:
-      - "8007:8007"  # Expose container port 8007 to host port 8007 
+      - "8007:8007"  # Expose container port 8007 to host port 8007
+ 
 
   inventory-service:
     build:
@@ -29,9 +42,11 @@ services:
     volumes:
       - ./inventory-service:/code  # Sync local development directory with the container
     depends_on:
+      - broker
       - inventory_db
     ports:
-      - "8008:8008"  # Expose container port 8008 to host port 8008 
+      - "8008:8008"  # Expose container port 8008 to host port 8008
+
 
   order-service:
     build:
@@ -40,9 +55,10 @@ services:
     volumes:
       - ./order-service:/code  # Sync local development directory with the container
     depends_on:
+      - broker
       - order_db
     ports:
-      - "8009:8009"  # Expose container port 8009 to host port 8009 
+      - "8009:8009"  # Expose container port 8009 to host port 8009
 
 
   notification-service:
@@ -51,8 +67,10 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./notification-service:/code  # Sync local development directory with the container  
+    depends_on:
+      - broker
     ports:
-      - "8010:8010" 
+      - "8010:8010"
 
 
   payment-service:
@@ -62,9 +80,11 @@ services:
     volumes:
       - ./payment-service:/code  # Sync local development directory with the container
     depends_on:
+      - broker
       - payment_db
     ports:
-      - "8011:8011" 
+      - "8011:8011"
+
 
   user_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -78,8 +98,6 @@ services:
       - '5433:5432'
     volumes:
       - user_db:/var/lib/postgresql/data
-    networks:
-      - default 
 
   product_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -93,8 +111,6 @@ services:
       - '5434:5432'
     volumes:
       - product_db:/var/lib/postgresql/data
-    networks:
-      - default
 
   inventory_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -108,8 +124,6 @@ services:
       - '5435:5432'
     volumes:
       - inventory_db:/var/lib/postgresql/data
-    networks:
-      - default
 
   order_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -123,8 +137,6 @@ services:
       - '5436:5432'
     volumes:
       - order_db:/var/lib/postgresql/data
-    networks:
-      - default
 
   payment_db:
     image: postgres:latest  # Use the official PostgreSQL image
@@ -138,17 +150,13 @@ services:
       - '5438:5432'
     volumes:
       - payment_db:/var/lib/postgresql/data
-    networks:
-      - default
-        
+
   broker:
     image: apache/kafka:3.7.0
     hostname: broker
     container_name: broker
     ports:
       - '9092:9092'
-    networks:
-      - default
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
@@ -170,8 +178,6 @@ services:
     container_name: kafka-ui
     ports:
       - "8080:8080"
-    networks:
-      - default
     environment:
       KAFKA_CLUSTERS_0_NAME: 'Local Kafka Cluster'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:19092'
@@ -179,7 +185,116 @@ services:
     depends_on:
       - broker
 
+  kong-migrations:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations bootstrap
+    profiles: [ "database" ]
+    depends_on:
+      - db
+    environment:
+      <<: *kong-env
+    secrets:
+      - kong_postgres_password
+    restart: on-failure
+
+  kong-migrations-up:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations up && kong migrations finish
+    profiles: [ "database" ]
+    depends_on:
+      - db
+    environment:
+      <<: *kong-env
+    secrets:
+      - kong_postgres_password
+    restart: on-failure
+
+  kong:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    user: "${KONG_USER:-kong}"
+    environment:
+      <<: *kong-env
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: "${KONG_PROXY_LISTEN:-0.0.0.0:8000}"
+      KONG_ADMIN_LISTEN: "${KONG_ADMIN_LISTEN:-0.0.0.0:8001}"
+      KONG_ADMIN_GUI_LISTEN: "${KONG_ADMIN_GUI_LISTEN:-0.0.0.0:8002}"
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+      KONG_DECLARATIVE_CONFIG: "/opt/kong/kong.yaml"
+    secrets:
+      - kong_postgres_password
+    ports:
+      # The following two environment variables default to an insecure value (0.0.0.0)
+      # according to the CIS Security test.
+      - "${KONG_INBOUND_PROXY_LISTEN:-0.0.0.0}:8000:8000/tcp"
+      - "${KONG_INBOUND_SSL_PROXY_LISTEN:-0.0.0.0}:8443:8443/tcp"
+      # Making them mandatory but undefined, like so would be backwards-breaking:
+      # - "${KONG_INBOUND_PROXY_LISTEN?Missing inbound proxy host}:8000:8000/tcp"
+      # - "${KONG_INBOUND_SSL_PROXY_LISTEN?Missing inbound proxy ssl host}:8443:8443/tcp"
+      # Alternative is deactivating check 5.13 in the security bench, if we consider Kong's own config to be enough security here
+
+      - "127.0.0.1:8001:8001/tcp"
+      - "127.0.0.1:8444:8444/tcp"
+      - "127.0.0.1:8002:8002/tcp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    healthcheck:
+      test: [ "CMD", "kong", "health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: on-failure:5
+    read_only: true
+    volumes:
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
+      - kong_tmp_vol:/tmp
+      # - ./config:/opt/kong
+    security_opt:
+      - no-new-privileges
+
+  db:
+    image: postgres:9.5
+    profiles: [ "database" ]
+    environment:
+      POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
+      POSTGRES_USER: ${KONG_PG_USER:-kong}
+      POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
+    secrets:
+      - kong_postgres_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-d",
+          "${KONG_PG_DATABASE:-kong}",
+          "-U",
+          "${KONG_PG_USER:-kong}"
+        ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    stdin_open: true
+    tty: true
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+
+
+
 volumes:
+  kong_data: {}
+  kong_prefix_vol:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  kong_tmp_vol:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
   user_db:
     driver: local
   product_db:
@@ -190,7 +305,11 @@ volumes:
     driver: local
   payment_db:
     driver: local
-  
+
 networks:
   default:
     driver: bridge
+
+secrets:
+  kong_postgres_password:
+    file: ./POSTGRES_PASSWORD  # Add the PostgreSQL password to this file
