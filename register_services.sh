@@ -46,6 +46,13 @@ register_service "payment-service" "http://host.docker.internal:8011" "/payment-
 echo "All services registered successfully!"
 
 
+
+
+
+
+
+
+#Alternate Method
 # KONG_ADMIN_URL="http://localhost:8001"
 
 # # Wait for Kong to be ready

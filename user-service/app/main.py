@@ -57,14 +57,14 @@ app = FastAPI(lifespan=lifespan,
         "name": "Apache 2.0",
         "identifier": "MIT",
     },
-    #  servers=[
-    #     {
-    #         "url": "http://127.0.0.1:8006", # ADD NGROK URL Here Before Creating GPT Action
-    #         "description": "Development Server"
-    #     }
-    #     ],
-    root_path="/users",
-    #root_path_in_servers=True
+     servers=[
+        {
+            "url": "http://127.0.0.1:8006", # ADD NGROK URL Here Before Creating GPT Action
+            "description": "Development Server"
+        }
+        ],
+    root_path="/user-service",
+    root_path_in_servers=True
 
 )
 

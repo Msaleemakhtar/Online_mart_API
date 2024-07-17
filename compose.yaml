@@ -238,8 +238,7 @@ services:
       - "127.0.0.1:8001:8001/tcp"
       - "127.0.0.1:8444:8444/tcp"
       - "127.0.0.1:8002:8002/tcp"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+   
 
     healthcheck:
       test: [ "CMD", "kong", "health" ]
