@@ -14,11 +14,7 @@ The User Service manages user authentication, registration, and profiles.
 - **Kong**: For API Gateway management.
 
 ## Endpoints
-![Endpoints](user-service/public/users.png.)
-- **POST /user/register**: Register a new user.
-- **POST /user/login**: Authenticate a user.
-- **GET /user/profile/{user_id}**: Retrieve user profile.
-- **PUT /user/profile/{user_id}**: Update user profile.
+![Endpoints](/public/users.png)
 
 ## Environment Variables
 - `DATABASE_URL`: Connection URL for PostgreSQL.
