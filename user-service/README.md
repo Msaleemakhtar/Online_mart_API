@@ -28,5 +28,7 @@ The User Service manages user authentication, registration, and profiles.
 
 
 ## Running the Service
+run the docker compose and hit the url http://localhost:8000/user-service/docs in browser 
+
 ```sh
-docker-compose up --build
+docker compose up --build
