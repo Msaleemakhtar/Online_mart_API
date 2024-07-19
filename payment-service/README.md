@@ -30,7 +30,8 @@ The Payment Service allows you to manage order payments.
 ## Running the Service
 run the docker compose and hit the url http://localhost:8000/payment-service/docs in browser to access the endpoints
 ```sh
-docker compose up --build
+docker compose up --build 
+```
 
 
 ## Webhook events testing locally
