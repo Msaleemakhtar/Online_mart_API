@@ -73,21 +73,12 @@ app = FastAPI(lifespan=lifespan,
 
 # signup users in db 
 @app.post("/api/oauth/signup", response_model=UserOutput, tags=["OAuth2 Authentication"])
-async def signup(user_data:UserRegister, db:Annotated[Session, Depends(get_db)]):
+async def signup(user_data:UserRegister, db:Annotated[Session, Depends(get_db)],
+                 producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
     
     user = await user_signup(user_data, db)
- 
-    return user
-
-
-
-
-# signup users in db and send to kafka
-@app.post("/api/oauth/signup-user", response_model=UserOutput, tags=["Kafka_Operation"])
-async def signup_user(user: Annotated[str, Depends(get_current_user)],
-                producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-
-    #Step 1: Serialize user data
+    
+     #Step 1: Serialize user data
     user_message = user_pb2.User(
         id=str(user.id),
         username=user.username,
@@ -104,6 +95,35 @@ async def signup_user(user: Annotated[str, Depends(get_current_user)],
     # Step 2: Send serialized data to Kafka
     await producer.send_and_wait(settings.KAFKA_USER_TOPIC, serialized_data)
     return user
+
+ 
+
+
+
+
+
+# # signup users in db and send to kafka
+# @app.post("/api/oauth/signup-user", response_model=UserOutput, tags=["Kafka_Operation"])
+# async def signup_user(user: Annotated[str, Depends(get_current_user)],
+#                 producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+    
+#     #Step 1: Serialize user data
+#     user_message = user_pb2.User(
+#         id=str(user.id),
+#         username=user.username,
+#         full_name=user.full_name,
+#         email=user.email,
+#         email_verified=user.email_verified
+#     )
+#     user_operation_message = user_pb2.UserOperation(
+#         operation=user_pb2.OperationType.CREATE,
+#         user=user_message
+#     )
+#     serialized_data = user_operation_message.SerializeToString()
+
+#     # Step 2: Send serialized data to Kafka
+#     await producer.send_and_wait(settings.KAFKA_USER_TOPIC, serialized_data)
+#     return user
 
 
 

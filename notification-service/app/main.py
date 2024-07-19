@@ -5,34 +5,26 @@ from fastapi import FastAPI
 from app.users_consumer import consume_users
 from app.orders_consumer import consume_orders
 
-
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("LifeSpan Event..")
-    #create_db_and_tables()
     loop = asyncio.get_event_loop()
-    order_task= loop.create_task(consume_orders())
-    user_task = loop.create_task(consume_users())
+    loop.create_task(consume_orders())
+    loop.create_task(consume_users())
     yield
-   
 
-description = f"""
-Notification Microservice API allows you to manage notification effectively. 
-With this microservice, you can:
-- Create, update, retrieve, and delete notification.
+description = """
+Notification Microservice API allows you to manage notifications effectively. 
+With this microservice:
 - Used protobuf for serialization and deserialization of data.
-
-Utilize Kafka for asynchronous creation, updating, and deletion of notification.
+- Utilize Kafka for asynchronous creation, updating, and deletion of notifications.
 """
 
-
-app = FastAPI(lifespan=lifespan,
+app = FastAPI(
+    lifespan=lifespan,
     title="Notification-service",
     description=description,
     version="0.0.1",
@@ -47,15 +39,16 @@ app = FastAPI(lifespan=lifespan,
     },
     servers=[
         {
-            "url": "http://127.0.0.1:8010", # ADD NGROK URL Here Before Creating GPT Action
+            "url": "http://127.0.0.1:8010",  # ADD NGROK URL Here Before Creating GPT Action
             "description": "Development Server"
         }
-        ],
+    ],
     root_path="/notification-service",
     root_path_in_servers=True
 )
 
 @app.get("/")
 async def root():
-    return {"Notification -service"}
+    return {"message": "Notification-service"}
+
 
