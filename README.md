@@ -1,26 +1,18 @@
+# 🌟 Online Mart API Using Event-Driven Microservices Architecture
 
-# Online Mart API Using Event-Driven Microservices Architecture
-
-## Project Overview
+## 📜 Project Overview
 
 Welcome to the **Online Mart API** project! This initiative focuses on developing a comprehensive, scalable, and efficient system for managing an online mart. The project leverages cutting-edge technologies and modern architectural patterns to ensure high performance and reliability.
 
-- **Build a scalable and efficient API** for an online mart using a microservices architecture.  
-  
-- **Implement an event-driven system** to facilitate asynchronous communication between services.  
+- **Build a scalable and efficient API** for an online mart using a microservices architecture.
+- **Implement an event-driven system** to facilitate asynchronous communication between services.
+- **Adopt modern technologies** including FastAPI for API development, Docker for containerization, and Kafka for event streaming.
+- **Streamline development and deployment** processes with DevContainers and Docker Compose.
+- **Route and manage API requests** through Kong API Gateway for enhanced control and scalability.
+- **Employ Protocol Buffers (Protobuf)** to achieve efficient data serialization and communication.
+- **Persist data reliably** using PostgreSQL as the primary database system.
 
-- **Adopt modern technologies** including FastAPI for API development, Docker for containerization, and Kafka for event streaming.  
-
-- **Streamline development and deployment** processes with DevContainers and Docker Compose.  
- 
-- **Route and manage API requests** through Kong API Gateway for enhanced control and scalability.  
- 
-- **Employ Protocol Buffers (Protobuf)** to achieve efficient data serialization and communication.  
-
-- **Persist data reliably** using PostgreSQL as the primary database system.  
-
-
-## Objectives
+## 🎯 Objectives
 
 - **Develop a scalable and efficient API** for an online mart using microservices.
 - **Implement an event-driven architecture** to handle asynchronous communication between services.
@@ -30,8 +22,7 @@ Welcome to the **Online Mart API** project! This initiative focuses on developin
 - **Use Protocol Buffers (Protobuf)** for efficient data serialization.
 - **Persist data** using PostgreSQL.
 
-
-## Technologies
+## 🛠 Technologies
 
 - **FastAPI**: A modern, fast (high-performance) web framework for building APIs with Python.
 - **Docker**: For containerizing the microservices, ensuring consistency across different environments.
@@ -43,9 +34,7 @@ Welcome to the **Online Mart API** project! This initiative focuses on developin
 - **Protocol Buffers (Protobuf)**: A method developed by Google for serializing structured data, similar to XML or JSON but smaller, faster, and simpler.
 - **Kong**: An open-source API Gateway and Microservices Management Layer.
 
-
-
-### Microservices
+## 🧩 Microservices
 
 1. **User Service**: Manages user authentication, registration, and profiles.
 2. **Product Service**: Manages product catalog, including CRUD operations for products.
@@ -54,35 +43,33 @@ Welcome to the **Online Mart API** project! This initiative focuses on developin
 5. **Notification Service**: Sends notifications (email, SMS) to users about order statuses and other updates.
 6. **Payment Service**: Processes payments and manages transaction records.
 
+## 🚀 Event-Driven Communication
 
-### Event-Driven Communication
 - **Kafka**: Acts as the event bus, facilitating communication between microservices. Each service can produce and consume messages (events) such as user registration, order placement, and inventory updates.
 - **Protobuf**: Used for defining the structure of messages exchanged between services, ensuring efficient and compact serialization.
 
-### Data Storage
+## 🗄 Data Storage
 
 - **PostgreSQL**: Each microservice with data persistence needs will have its own PostgreSQL database instance, following the database-per-service pattern.
 
-### API Gateway
+## 🛡 API Gateway
 
 - **Kong**: Manages API request routing, authentication, rate limiting, and other cross-cutting concerns.
 
-## Development Environment
+## 💻 Development Environment
 
 - **DevContainers**: Provide consistent development environments using VSCode DevContainers, ensuring that all team members work in identical environments.
 - **Docker Compose**: Orchestrates the various microservices and dependencies (PostgreSQL, Kafka, etc.) during development and testing.
 
-
-
-
-## Getting Started
+## 🏁 Getting Started
 
 To get started with the project, follow the setup instructions.
 
-1. Clone the project from [GitHub](https://github.com/Msaleemakhtar/Online_mart_API.git)
+1. Clone the Project
 
 ```bash
 git clone https://github.com/Msaleemakhtar/Online_mart_API.git
+
 ```
 2. Run the command to up all microservices's containers
 
@@ -143,13 +130,14 @@ To use the Gmail API in your project, follow these steps to obtain and configure
    ```
 
 
-6. Checkout all microservices in browser:
-- kafka UI http://localhost:8080/
-- Kong UI http://localhost:8002/
-- user Microservice http://localhost:8000/user-service/docs
-- product Microservice http://localhost:8000/product-service/docs
-- Inventory Microservice http://localhost:8000/inventory-service/docs
-- Order Microservice http://localhost:8000/order-service/docs
-- payment Microservice http://localhost:8000/payment-service/docs
-- Notification Microservice http://localhost:8000/notification-service/docs
+6. 🌐 Checkout All Microservices in Browser
+
+- 📊 Kafka UI: [http://localhost:8080/](http://localhost:8080/)
+- 🛡️ Kong UI: [http://localhost:8002/](http://localhost:8002/)
+- 👤 User Microservice: [http://localhost:8000/user-service/docs](http://localhost:8000/user-service/docs)
+- 🛍️ Product Microservice: [http://localhost:8000/product-service/docs](http://localhost:8000/product-service/docs)
+- 📦 Inventory Microservice: [http://localhost:8000/inventory-service/docs](http://localhost:8000/inventory-service/docs)
+- 📜 Order Microservice: [http://localhost:8000/order-service/docs](http://localhost:8000/order-service/docs)
+- 💳 Payment Microservice: [http://localhost:8000/payment-service/docs](http://localhost:8000/payment-service/docs)
+- ✉️ Notification Microservice: [http://localhost:8000/notification-service/docs](http://localhost:8000/notification-service/docs)
 
