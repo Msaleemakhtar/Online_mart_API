@@ -1,7 +1,7 @@
 # Notification Management MicroService
 
 ## Overview
-The notification Service allows you to manage user and order notification.
+The notification Service allows you to manage notifications of users and order services .
 
 
 ## Technologies
@@ -12,8 +12,6 @@ The notification Service allows you to manage user and order notification.
 - **Docker**: For containerization.
 - **Kong**: For API Gateway management.
 
-## Endpoints
-![Endpoints](/public/payment.png)
 
 ## Environment Variables
 - `DATABASE_URL`: Connection URL for PostgreSQL.
@@ -21,28 +19,75 @@ The notification Service allows you to manage user and order notification.
 - `KAFKA_USER_TOPIC`: Kafka topic used for publishing and subscribing to user-related events
 - `KAFKA_ORDER_TOPIC`: Kafka topic used for publishing and subscribing to order-related events.
 - `KAFKA_CONSUMER_GROUP_ID_FOR_NOTIFICATION`: Kafka consumer group to receive the event from Kafka. 
-- `STRIPE_SECRET_KEY`: .
-- `TRIPE_WEBHOOK_SECRET`: .
-
-
 
 
 ## Running the Service
-run the docker compose and hit the url http://localhost:8000/payment-service/docs in browser to access the endpoints
+run the docker compose and hit the url http://localhost:8000/notification-service/docs in browser to access the endpoints
 ```sh
 docker compose up --build 
 ```
 
+# Gmail API Email Sender
 
-## Webhook events testing locally
-Use Stripe CLI to simulate Stripe events in your local environment:
-1. Download the latest linux tar.gz file from Github https://github.com/stripe/stripe-cli/releases/tag/v1.21.0
-2. Unzip the file: tar -xvf stripe_X.X.X_linux_x86_64.tar.gz
-3. Move ./stripe to your execution path.
-4. log in with your Stripe account ./stripe login.
-5. run  ./stripe listen --forward-to localhost:8011/webhook
+This Python script demonstrates how to use the Gmail API to send emails using OAuth 2.0 for authentication. The script relies on Google’s API client libraries and requires setup with credentials and token files to function correctly.
+
+## Requirements
+
+- Python 3.x
+- Google API client libraries
+- OAuth 2.0 credentials from Google Cloud Console
+
+## Setup
+
+**Install Dependencies:**
+
+   Ensure you have the required Python packages installed. You can install them using:
+
+   ```bash
+   poetry add google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+# Setting Up Gmail API Credentials
+
+To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
+
+1. **Go to the Google Cloud Console:**
+   - Visit the [Google Cloud Console](https://console.cloud.google.com/).
+
+2. **Create a New Project or Select an Existing Project:**
+   - Click on the project dropdown in the top navigation bar.
+   - Choose `New Project` to create a new one, or select an existing project from the list.
+
+3. **Enable the Gmail API:**
+   - In the left-hand menu, go to `APIs & Services` > `Library`.
+   - Search for "Gmail API" and click on it.
+   - Click the `Enable` button.
+
+4. **Create OAuth 2.0 Credentials:**
+   - In the left-hand menu, go to `APIs & Services` > `Credentials`.
+   - Click on `Create Credentials` and select `OAuth Client ID`.
+   - If prompted, configure the OAuth consent screen with necessary details.
+   - For `Application type`, select `desktop application`.
+   - Set the `Authorized redirect URIs` according to your application's requirements.
+   - Click `Create`.
+
+5. **Download the Credentials:**
+   - After creating the OAuth 2.0 Client ID, you will be provided with a `credentials.json` file.
+   - Download this file to your local system.
+
+6. **Place the `credentials.json` File:**
+   - Move the downloaded `credentials.json` file to the `/code/app/` directory of your project.
+
+Make sure to keep your `credentials.json` file secure and do not expose it publicly.
 
 
-## Navigate through Kong API Gateway to access the API endpoints 
-Hit the url http://localhost:8000/payment-service/docs in browser to access the endpoints
-1. Use /checkout end point to proceed the order payment and after successful completion will Forward events to your webhook.
+
+# Running the Script
+
+When you run the script for the first time, it will prompt you to authorize access to your Google account. This process will generate a `token.json` file in the `/code/app/` directory, which will be used for future authentication.
+
+## Run the Script
+
+Execute the script using the following command:
+
+```bash
+python script_name.py
