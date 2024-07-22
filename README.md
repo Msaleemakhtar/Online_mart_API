@@ -83,7 +83,7 @@ docker compose --profile database up --build -d
 
 ```
 4. ### Webhook events testing locally
-Use Stripe CLI to simulate Stripe events in your local environment:
+   Use Stripe CLI to simulate Stripe events in your local environment:
    1. Download the latest linux tar.gz file from Github https://github.com/stripe/stripe-cli/releases/tag/v1.21.0
    2. Unzip the file: tar -xvf stripe_X.X.X_linux_x86_64.tar.gz
    3. Move ./stripe to your execution path.
@@ -91,9 +91,10 @@ Use Stripe CLI to simulate Stripe events in your local environment:
    5. run  ./stripe listen --forward-to localhost:8011/webhook
 
 
+
 5. ### Setting Up Gmail API Credentials
 
-To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
+   To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
 
    1. **Go to the Google Cloud Console:**
    - Visit the [Google Cloud Console](https://console.cloud.google.com/).
