@@ -65,27 +65,27 @@ Welcome to the **Online Mart API** project! This initiative focuses on developin
 
 To get started with the project, follow the setup instructions.
 
-1. Clone the Project
+1.  Clone the Project
 
    ```bash
    git clone https://github.com/Msaleemakhtar/Online_mart_API.git
    ```
 
-2. Set the Environment Variables, visit readme.md of each Microservice
+2.  Set the Environment Variables, visit readme.md of each Microservice
 
-3. Run the command to up all microservices's containers
+3.  Run the command to up all microservices's containers
 
-   ```bash
-   docker compose --profile database up --build -d
-   ```
+      ```bash
+      docker compose --profile database up --build -d
+      ```
 
-4. Register the services and routes in Kong API Gateway
+4.  Register the services and routes in Kong API Gateway
 
-   ```bash
-   ./register_services.sh
-   ```
+      ```bash
+      ./register_services.sh
+      ```
 
-5. ### Webhook events testing locally
+5.  ### Webhook events testing locally
    Use Stripe CLI to simulate Stripe events in your local environment:
    1. Download the latest linux tar.gz file from Github https://github.com/stripe/stripe-cli/releases/tag/v1.21.0
    2. Unzip the file: tar -xvf stripe_X.X.X_linux_x86_64.tar.gz
@@ -95,7 +95,7 @@ To get started with the project, follow the setup instructions.
 
 
 
-6. ### Setting Up Gmail API Credentials
+6.  ### Setting Up Gmail API Credentials
 
    To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
 
@@ -129,12 +129,12 @@ To get started with the project, follow the setup instructions.
    When you run the script for the first time, it will prompt you to authorize access to your Google account. This process will generate a `token.json` file in the `/code/app/` directory, which will be used for future authentication.
    Execute the script using the following command:
 
-   ```bash
-   python script_name.py
-   ```
+      ```bash
+      python script_name.py
+      ```
 
 
-7. 🌐 Checkout All Microservices in Browser
+7.  🌐 Checkout All Microservices in Browser
 
 - 📊 Kafka UI: [http://localhost:8080/](http://localhost:8080/)
 - 🛡️ Kong UI: [http://localhost:8002/](http://localhost:8002/)
