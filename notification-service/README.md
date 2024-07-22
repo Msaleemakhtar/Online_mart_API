@@ -45,7 +45,7 @@ This Python script demonstrates how to use the Gmail API to send emails using OA
 
    ```bash
    poetry add google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
-
+```
 # Setting Up Gmail API Credentials
 
 To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
