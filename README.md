@@ -6,28 +6,18 @@
 Welcome to the **Online Mart API** project! This initiative focuses on developing a comprehensive, scalable, and efficient system for managing an online mart. The project leverages cutting-edge technologies and modern architectural patterns to ensure high performance and reliability.
 
 - **Build a scalable and efficient API** for an online mart using a microservices architecture.  
-  ![Microservices](https://img.icons8.com/ios/50/000000/microservices.png)
-
+  
 - **Implement an event-driven system** to facilitate asynchronous communication between services.  
-  ![Event-Driven Architecture](https://img.icons8.com/ios/50/000000/event-schedule.png)
 
 - **Adopt modern technologies** including FastAPI for API development, Docker for containerization, and Kafka for event streaming.  
-  ![FastAPI](https://img.icons8.com/ios/50/ff6600/fastapi.png)  
-  ![Docker](https://img.icons8.com/ios/50/2496ed/docker.png)  
-  ![Kafka](https://img.icons8.com/ios/50/000000/apache-kafka.png)
 
 - **Streamline development and deployment** processes with DevContainers and Docker Compose.  
-  ![DevContainers](https://img.icons8.com/ios/50/000000/visual-studio-code.png)  
-  ![Docker Compose](https://img.icons8.com/ios/50/000000/docker-compose.png)
-
+ 
 - **Route and manage API requests** through Kong API Gateway for enhanced control and scalability.  
-  ![Kong API Gateway](https://img.icons8.com/ios/50/000000/api.png)
-
+ 
 - **Employ Protocol Buffers (Protobuf)** to achieve efficient data serialization and communication.  
-  ![Protocol Buffers](https://img.icons8.com/ios/50/000000/protobuf.png)
 
 - **Persist data reliably** using PostgreSQL as the primary database system.  
-  ![PostgreSQL](https://img.icons8.com/ios/50/336791/postgresql.png)
 
 
 ## Objectives
@@ -87,5 +77,79 @@ Welcome to the **Online Mart API** project! This initiative focuses on developin
 
 ## Getting Started
 
-To get started with the project, follow the [setup instructions](#setup).
+To get started with the project, follow the setup instructions.
+
+1. Clone the project from [GitHub](https://github.com/Msaleemakhtar/Online_mart_API.git)
+
+```bash
+git clone https://github.com/Msaleemakhtar/Online_mart_API.git
+```
+2. Run the command to up all microservices's containers
+
+```bash
+docker compose --profile database up --build -d
+```
+3. Register the services and routes in Kong API Gateway
+
+ ```bash
+./register_services.sh
+
+```
+4. ### Webhook events testing locally
+Use Stripe CLI to simulate Stripe events in your local environment:
+   1. Download the latest linux tar.gz file from Github https://github.com/stripe/stripe-cli/releases/tag/v1.21.0
+   2. Unzip the file: tar -xvf stripe_X.X.X_linux_x86_64.tar.gz
+   3. Move ./stripe to your execution path.
+   4. log in with your Stripe account ./stripe login.
+   5. run  ./stripe listen --forward-to localhost:8011/webhook
+
+
+5. ### Setting Up Gmail API Credentials
+
+To use the Gmail API in your project, follow these steps to obtain and configure your OAuth 2.0 credentials:
+
+   1. **Go to the Google Cloud Console:**
+   - Visit the [Google Cloud Console](https://console.cloud.google.com/).
+
+   2. **Create a New Project or Select an Existing Project:**
+   - Click on the project dropdown in the top navigation bar.
+   - Choose `New Project` to create a new one, or select an existing project from the list.
+
+   3. **Enable the Gmail API:**
+   - In the left-hand menu, go to `APIs & Services` > `Library`.
+   - Search for "Gmail API" and click on it.
+   - Click the `Enable` button.
+
+   4. **Create OAuth 2.0 Credentials:**
+   - In the left-hand menu, go to `APIs & Services` > `Credentials`.
+   - Click on `Create Credentials` and select `OAuth Client ID`.
+   - If prompted, configure the OAuth consent screen with necessary details.
+   - For `Application type`, select `desktop application`.
+   - Set the `Authorized redirect URIs` according to your application's requirements.
+   - Click `Create`.
+
+   5. **Download the Credentials:**
+   - After creating the OAuth 2.0 Client ID, you will be provided with a `credentials.json` file.
+   - Download this file to your local system.
+
+   6. **Place the `credentials.json` File:**
+   - Move the downloaded `credentials.json` file to the `/code/app/` directory of your project. Make sure to keep your `credentials.json` file secure and do not expose it publicly.
+   7. **Running the Script:**
+   When you run the script for the first time, it will prompt you to authorize access to your Google account. This process will generate a `token.json` file in the `/code/app/` directory, which will be used for future authentication.
+   Execute the script using the following command:
+
+   ```bash
+   python script_name.py
+   ```
+
+
+6. Checkout all microservices in browser:
+- kafka UI http://localhost:8080/
+- Kong UI http://localhost:8002/
+- user Microservice http://localhost:8000/user-service/docs
+- product Microservice http://localhost:8000/product-service/docs
+- Inventory Microservice http://localhost:8000/inventory-service/docs
+- Order Microservice http://localhost:8000/order-service/docs
+- payment Microservice http://localhost:8000/payment-service/docs
+- Notification Microservice http://localhost:8000/notification-service/docs
 
